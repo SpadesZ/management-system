@@ -1,0 +1,84 @@
+# File Path: docker-compose.yml
+# Timestamp: 2026-05-25T12:00:00+08:00
+# Version: v0.1
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: llm-finops-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-llm_finops}
+      POSTGRES_USER: ${POSTGRES_USER:-llm_finops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-llm_finops}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-llm_finops}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: llm-finops-redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: llm-finops-backend
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "18001:8000"
+    volumes:
+      - ./backend:/app
+      - ./infra/exports:/app/exports
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: llm-finops-worker
+    command: ["python", "-m", "app.worker"]
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./infra/exports:/app/exports
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: llm-finops-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
