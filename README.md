@@ -1,11 +1,49 @@
-# LLM API FinOps V1.1
+# AI Service Access & Costs
 
-此專案是公司內部 LLM API Key / AI 帳號 / Token 成本治理平台的 V1.1 嚴格實作。
+Manage who can use language-model APIs and track the resulting usage and costs.
+Staff submit requests; reviewers approve access; administrators review usage and costs.
 
-## 文件入口
+![Admin approvals on a fresh local database](docs/assets/admin-approvals.png)
+
+*Real admin UI with its original Traditional Chinese and English labels. This fresh local database contains seed records and zero usage; it shows no company data, API keys, or measured cost savings.*
+
+For internal use. The current deployment has not been checked. The local gateway uses a mock provider by default; this preview does not call a model service.
+
+[Run locally](#run-locally) · [Staff workflow and design](docs/LLM_API_FinOps_V1.1_Strict_Plan.md) · [Backup and restore](docs/Runbook_Backup_Restore.md)
+
+## Run locally
+
+Use Docker Compose and Python 3.10+ on a machine with ports 5432, 6380, 18001, and 5173 available. The Compose file uses fixed container names, so run one copy at a time.
+
+```powershell
+Copy-Item .env.example .env
+python -c "import secrets,base64; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())"
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Put the first generated value in `MASTER_ENCRYPTION_KEY` and the second in `JWT_SECRET_KEY` in `.env`. Keep `GATEWAY_MOCK_PROVIDER=true` for the local demo.
+
+```powershell
+docker compose up -d --build
+python -m unittest discover -s backend/tests -p "test_smoke_live.py" -v
+```
+
+Open [the app](http://localhost:5173) or [API docs](http://localhost:18001/docs). The seed login is `admin@example.com` / `ChangeThisPassword!`; change it before using the app with real data.
+
+**Verified:** four live smoke checks passed against an isolated fresh database: health, registration options, registration/login, and admin identity. Existing container images supplied dependencies while this checkout supplied source. A full image build, live provider billing, production deployment, and backup restore were not checked in this pass.
+
+## Technical details — 繁體中文
+
+The original technical and operations notes follow in Traditional Chinese.
+
+### LLM API FinOps V1.1
+
+此專案實作內部 LLM API 存取、帳號與成本管理。V1.1 是規劃與程式版本標籤，不代表正式部署或完整驗收。
+
+### 文件入口
 - 規劃書：[docs/LLM_API_FinOps_V1.1_Strict_Plan.md](docs/LLM_API_FinOps_V1.1_Strict_Plan.md)
 
-## 技術棧
+### 技術棧
 - Frontend：Vue 3 + Element Plus + ECharts
 - Backend：FastAPI
 - Database：PostgreSQL
@@ -13,11 +51,11 @@
 - Background Jobs：Celery/RQ 可替換；目前使用資料庫輪詢 worker
 - Deployment：Docker Compose
 
-## 建置來源說明
+### 建置來源說明
 - Backend/Worker 的 Docker build 只使用 `backend/Dockerfile` 與 `backend/requirements.txt`。
 - Frontend 的 Docker build 使用 `frontend/Dockerfile`。
 
-## 快速啟動
+### 快速啟動
 1. 複製環境變數
    - `copy .env.example .env`
 2. 產生主金鑰（32-byte URL-safe base64）填入 `MASTER_ENCRYPTION_KEY`
@@ -27,15 +65,15 @@
    - Backend: `http://localhost:18001/docs`
    - Frontend: `http://localhost:5173`
 
-## 最小驗收測試（Smoke）
+### 最小驗收測試（Smoke）
 1. 先確認服務已啟動
    - `docker compose up -d --build`
 2. 執行最小 Smoke 測試
-   - `python -m unittest discover -s backend/tests -p "test_*.py" -v`
+   - `python -m unittest discover -s backend/tests -p "test_smoke_live.py" -v`
 
 此測試會驗證 `healthz`、註冊選項、註冊與登入流程。
 
-## 備份與還原（營運）
+### 備份與還原（營運）
 1. 建立 15 分鐘備份排程（Windows Task Scheduler）
    - `pwsh ./infra/backup/register_backup_task.ps1`
 2. 立即執行單次備份
@@ -47,7 +85,7 @@
 
 備份/還原完整流程請見：`docs/Runbook_Backup_Restore.md`
 
-## 預設帳號
+### 預設帳號
 - Email：`admin@example.com`
 - Password：`ChangeThisPassword!`
 
