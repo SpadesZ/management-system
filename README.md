@@ -3,19 +3,33 @@
 Manage who can use language-model APIs and track the resulting usage and costs.
 Staff submit requests; reviewers approve access; administrators review usage and costs.
 
-![Admin approvals on a fresh local database](docs/assets/admin-approvals.png)
-
-*Real admin UI with its original Traditional Chinese and English labels. This fresh local database contains seed records and zero usage; it shows no company data, API keys, or measured cost savings.*
-
 For internal use. The current deployment has not been checked. The local gateway uses a mock provider by default; this preview does not call a model service.
 
 [Run locally](#run-locally) · [Staff workflow and design](docs/LLM_API_FinOps_V1.1_Strict_Plan.md) · [Backup and restore](docs/Runbook_Backup_Restore.md)
+
+![Actual reviewer confirmation for a sample approval record](docs/assets/admin-approvals.png)
+
+*Real local reviewer UI with its original labels. A sample record was created
+through the API and approved through this dialog. No key, provider call,
+company data or measured cost saving is shown.*
+
+```text
+Sample request: DEMO_ONLY / SAMPLE_RECORD
+Before review: PENDING
+Decision: Approve this demo record only.
+After review: APPROVED
+```
+
+This example verifies a recorded review decision. It does not grant access to
+a real model account or demonstrate provider billing.
 
 ## Run locally
 
 Use Docker Compose and Python 3.10+ on a machine with ports 5432, 6380, 18001, and 5173 available. The Compose file uses fixed container names, so run one copy at a time.
 
 ```powershell
+git clone https://github.com/SpadesZ/management-system.git
+cd management-system
 Copy-Item .env.example .env
 python -c "import secrets,base64; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())"
 python -c "import secrets; print(secrets.token_urlsafe(48))"
@@ -30,11 +44,18 @@ python -m unittest discover -s backend/tests -p "test_smoke_live.py" -v
 
 Open [the app](http://localhost:5173) or [API docs](http://localhost:18001/docs). The seed login is `admin@example.com` / `ChangeThisPassword!`; change it before using the app with real data.
 
-**Verified:** four live smoke checks passed against an isolated fresh database: health, registration options, registration/login, and admin identity. Existing container images supplied dependencies while this checkout supplied source. A full image build, live provider billing, production deployment, and backup restore were not checked in this pass.
+The local preview covers login and a recorded approval decision. Current
+smoke-check scope and setup limits are listed in the validation notes below.
 
 ## Technical details — 繁體中文
 
 The original technical and operations notes follow in Traditional Chinese.
+
+### 本機驗證範圍
+
+2026-10-02：隔離資料庫驗證 health、registration options、registration/login、admin identity，
+並以真 UI 將 demo-only request 從 PENDING 改為 APPROVED。既有 container images 提供依賴，
+本 checkout 提供 source。未重建完整 image、未驗 provider billing、production deployment 或備份復原。
 
 ### LLM API FinOps V1.1
 
