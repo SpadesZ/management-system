@@ -1,7 +1,7 @@
 # AI Service Access & Costs
 
 Manage who can use language-model APIs and track the resulting usage and costs.
-Staff submit requests; reviewers approve access; administrators review usage and costs.
+Staff request access → assigned review → gateway limits → usage/cost records.
 
 For internal use. The current deployment has not been checked. The local gateway uses a mock provider by default; this preview does not call a model service.
 
@@ -20,8 +20,14 @@ Decision: Approve this demo record only.
 After review: APPROVED
 ```
 
-This example verifies a recorded review decision. It does not grant access to
-a real model account or demonstrate provider billing.
+Assigned reviewers record the decision; admins can override the review step.
+The gateway checks access and budget limits before a call, then records token
+usage and cost entries. Finance and admin users can review the totals.
+
+This example verifies a recorded review decision. Approval alone does not
+issue a key or grant a model entitlement; account/key setup and gateway access
+checks are separate. Budget limits and usage/cost records are implemented,
+but this screenshot does not demonstrate provider billing or cost savings.
 
 ## Run locally
 
@@ -53,9 +59,12 @@ The original technical and operations notes follow in Traditional Chinese.
 
 ### 本機驗證範圍
 
-2026-10-02：隔離資料庫驗證 health、registration options、registration/login、admin identity，
-並以真 UI 將 demo-only request 從 PENDING 改為 APPROVED。既有 container images 提供依賴，
-本 checkout 提供 source。未重建完整 image、未驗 provider billing、production deployment 或備份復原。
+2026-10-02 第三批：既有隔離容器掛載本 checkout，重跑 health、registration options、
+registration/login、admin identity，4 項 smoke 通過；另以真 UI 將新 synthetic request
+從 PENDING 改為 APPROVED。截圖只含 demo 資料。未重建完整 image、未實跑 quota/cost
+端到端測試、未呼叫 provider，也未驗 production deployment 或備份復原。
+
+Go-Live 文件保留原驗收紀錄，但勾選項目不代表本輪確認目前 production 已驗收。
 
 ### LLM API FinOps V1.1
 

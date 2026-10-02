@@ -1,5 +1,7 @@
 # V1.1 上線驗收清單
 
+> 歷史驗收紀錄：保留原勾選項目。2026-10-02 presentation review 未重新確認目前 production 部署、外部計費或完整 Go-Live 驗收；請勿將本表當成目前環境的健康報告。
+
 ## 權限與資料域
 - [x] Deny by default 已生效。
 - [x] Role 與 scope filter 已覆蓋所有列表 API。

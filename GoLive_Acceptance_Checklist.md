@@ -1,5 +1,7 @@
 # GoLive Acceptance Checklist
 
+> 歷史驗收紀錄：保留原勾選項目。2026-10-02 presentation review 未重新確認目前 production 部署、外部計費或完整 Go-Live 驗收；請勿將本表當成目前環境的健康報告。
+
 ## P0 先決條件（部署與最小可驗證）
 - [x] backend build context 內有可用 Dockerfile（backend/Dockerfile）
 - [x] backend build context 內有可用 requirements（backend/requirements.txt）
